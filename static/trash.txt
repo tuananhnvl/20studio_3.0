@@ -1,0 +1,77 @@
+ var textureDiff = new THREE.TextureLoader().load("./asset/textures/Kopnena_vrata_zadar_baseColor.jpeg", tex => {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set( 1, 1 );
+      })
+ 
+    const bouncingMaterial = new THREE.extendMaterial(new THREE.MeshStandardMaterial, {
+    
+        class: THREE.CustomMaterial,  // In this case ShaderMaterial would be fine too, just for some features such as envMap this is required
+      
+        vertexHeader: 'uniform float offsetScale;uniform float uTime;',
+        vertex: {
+            transformEnd: 'transformed += normal * offsetScale;transformed.x += sin( position.y * 4.0 + uTime ) * 0.25;'
+        },
+        fragmentHeader: '',
+        fragment: {
+            '#include <fog_fragment>': 'vec4 text2 = vec4(1.0,0.1,0.2,1.0);gl_FragColor = mix(vec4(0.3,1.0,0.2,1.0),text2, vNormal.y);'
+        },
+        material: {
+            map: textureDiff,
+        },
+        uniforms: {
+            textureFinal: { type: 't', value: textureDiff },
+            map: textureDiff,
+            uTime,
+            roughness: 0.75,
+            offsetScale: {
+                mixed: true,    // Uniform will be passed to a derivative material (MeshDepthMaterial below)
+                linked: true,   // Similar as shared, but only for derivative materials, so wavingMaterial will have it's own, but share with it's shadow material
+                value: 0
+            }
+        }
+    
+    } );
+
+
+
+    let m = new THREE.MeshStandardMaterial({
+        roughness: 0.25,
+      metalness: 0,
+      map: new THREE.TextureLoader().load("./asset/textures/Kopnena_vrata_zadar_baseColor.jpeg", tex => {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set( 1, 1 );
+      }),
+      onBeforeCompile: shader => {
+        shader.uniforms.bbMin = uniformsm.bbMin;
+        shader.uniforms.bbMax = uniformsm.bbMax;
+        shader.uniforms.color1 = uniformsm.color1;
+        shader.uniforms.color2 = uniformsm.color2;
+        shader.vertexShader = `
+            varying vec3 vPos;
+          ${shader.vertexShader}
+        `.replace(
+        `#include <begin_vertex>`,
+        `#include <begin_vertex>
+        vPos = transformed;
+        `
+        );
+        shader.fragmentShader = `
+            uniform vec3 bbMin;
+          uniform vec3 bbMax;
+          uniform vec3 color1;
+          uniform vec3 color2;
+          varying vec3 vPos;
+          ${shader.fragmentShader}
+        `.replace(
+            `vec4 diffuseColor = vec4( diffuse, opacity );`,
+          `
+          float f = clamp((vPos.z - bbMin.z) / (bbMax.z - bbMin.z), 0., 1.);
+          vec3 col = mix(color1, color2, f);
+          vec4 diffuseColor = vec4( vec3(1.0,1.0,1.0), opacity );`
+        );
+        console.log(shader.vertexShader);
+        console.log(shader.fragmentShader);
+      }
+    });

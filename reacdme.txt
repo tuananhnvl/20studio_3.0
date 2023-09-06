@@ -1,0 +1,11 @@
+https://codesandbox.io/s/water-distortion-effect-codrops-forked-fjjltg?file=/src/Planes.js
+
+
+https://tympanus.net/codrops/2021/07/21/creating-a-typography-motion-trail-effect-with-three-js/
+
+https://github.com/pmndrs/postprocessing/wiki/Custom-Effects
+
+
+https://www.shadertoy.com/view/wdtyDH#
+
+https://github.com/akella/webgl-mouseover-effects

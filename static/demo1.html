@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CodePen - ThreeJS</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href='//fonts.googleapis.com/css?family=Signika+Negative:300,400,600' rel='stylesheet' type='text/css'>
+    <meta name="viewport" content="user-scalable=no, width=device-width" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel='stylesheet' href='https://codepen.io/GreenSock/pen/ZEGdQLM/7ba936b34824fefdccfe2c6d9f0b740b.css'>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/locomotive-scroll@3.5.4/dist/locomotive-scroll.css'>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .canvas0cc {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+    }
+</style>
+
+<body>
+    <div class="canvas0cc">
+        <canvas id="view-c"></canvas>
+    </div>
+    <div id="vertexShaderss">
+
+        varying vec3 vUv;
+        void main() {
+        vUv = position;
+
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    </div>
+    <script type="x-shader/x-vertex" id="vertexshader">
+
+        varying vec2 vUv;
+    
+        void main() {
+    
+          vUv = uv;
+    
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    
+        }
+    
+      </script>
+    
+      <script type="x-shader/x-fragment" id="fragmentshader">
+    
+        uniform sampler2D baseTexture;
+        uniform sampler2D bloomTexture;
+    
+        varying vec2 vUv;
+    
+        void main() {
+    
+          gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 0.5 ) * texture2D( bloomTexture, vUv ) );
+    
+        }
+      </script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.137.5/build/three.module.js"
+            }
+        }
+    </script>
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r119/three.js'></script>
+    <script type="module" src="./script-demo1.js"></script>
+</body>
+
+</html>
