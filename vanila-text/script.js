@@ -9,10 +9,10 @@ import simplexNoise from 'https://cdn.skypack.dev/simplex-noise';
 import { data } from './data/store.js'
 import Stats from 'https://cdnjs.cloudflare.com/ajax/libs/stats.js/17/Stats.js'
 
-
+let time,mousePos
 const marginDog = new THREE.Vector3(1.0, 1.0, 1.0)
 const marginBrain = new THREE.Vector3(0.0, 2.0, -2.0)
-const AMOUNTinstanced = 500
+const AMOUNTinstanced = 1000
 localStorage.setItem('posY', 0)
 let stats,scene, camera, renderer,mixer,ModelBlender,animMixerModel 
 let totalDuration
@@ -31,14 +31,15 @@ dracoLoader.setDecoderPath('jsm/libs/draco/gltf/');
 
 const loaderAnim = new GLTFLoader();
 const clock = new THREE.Clock();
+const dfMaterial = new THREE.MeshBasicMaterial({color:'green'})
+const dummy = new THREE.Object3D()
 
-console.log(simplexNoise)
 function init() {
 	//SCENE
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0xEEE3CB);
 	//CAMERA
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+	camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
 	camera.position.z = 5;
 	//RERENDER
 	renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("view-canvas") });
@@ -50,22 +51,22 @@ function init() {
 	const light = new THREE.AmbientLight(0x404040); // soft white light
 	scene.add(light);
 	//CONTROLS
-	//const controls = new OrbitControls(camera, renderer.domElement);
-
+	const controls = new OrbitControls(camera, renderer.domElement);
+	controls.enableZoom = false
 	//LOAD  MODEL TO ANIM
 	loaderAnim.setDRACOLoader(dracoLoader);
 	loaderAnim.load('./asset/ufo.glb', function (gltf) {
-		console.log(gltf)
+
 		ModelBlender = gltf;
 		ModelBlender.scene.position.set(0, -1, 0);
 		//model.scale.set(0.005, 0.005, 0.005);
-		scene.add(ModelBlender.scene);
+		console.log(ModelBlender.scene)
 	
 		animMixerModel = new THREE.AnimationMixer(ModelBlender.scene);
 		totalDuration = ModelBlender.animations[12].duration;
-		console.log(ModelBlender.animations)
 		
-		animateModel();
+		//scene.add(ModelBlender.scene);
+		//animateModel();
 
 	}, undefined, function (e) {
 
@@ -115,13 +116,13 @@ function curvePath() {
 function instancedConeMesh() {
 	const instancedMesh = new THREE.InstancedMesh(undefined, undefined, AMOUNTinstanced);
 	const geometryB = new THREE.ConeBufferGeometry(0.04, 0.05, 3);
-
+	const dfSphereGeomestry = new THREE.SphereBufferGeometry(0.01,1,1)
 
 	const materialB = new THREE.MeshBasicMaterial({ color: 'red' });
 	const shaderMaterial = new THREE.ShaderMaterial({
 
 		uniforms: {
-			time: { value: 1.0 },
+			uTime: { value: 0.0 },
 			resolution: { value: new THREE.Vector2() },
 			uScroll: { value: 0.0 }
 		},
@@ -130,8 +131,10 @@ function instancedConeMesh() {
 		fragmentShader: document.getElementById('fragmentShader').textContent
 
 	});
-	instancedMesh.geometry = geometryB
+
+	instancedMesh.geometry = dfSphereGeomestry
 	instancedMesh.material = shaderMaterial
+//	instancedMesh.material.wireframe = true 	
 
 	const dogPosAttribute = new THREE.InstancedBufferAttribute(new Float32Array(dogonplane.dogonplane), 3);
 	const brainPosAttribute = new THREE.InstancedBufferAttribute(new Float32Array(brainJson.brainJson), 3);
@@ -175,13 +178,20 @@ function onWindowResize() {
 }
 
 function updateInstancedMesh() {
+	time++
 	var processScroll = localStorage.getItem('posY')
 	let mesh = scene.children[3]
 	//console.log(processScroll)
 	if (mesh.material.uniforms) {
 		mesh.material.uniforms.uScroll.value = processScroll
+		mesh.material.uniforms.uTime.value = time
 	}
+
+	let matrix = new THREE.Matrix4()
+	const offsetInstanced = ( AMOUNTinstanced - 1 ) / 2;
+	console.log(mousePos)
 	if (mesh && 1 === 3) {
+		console.log('run ne')
 		for (let i = 0; i < AMOUNTinstanced; i++) {
 
 			let positionDog = data[i]['dog'];
@@ -273,4 +283,11 @@ function render() {
 	renderer.render(scene, camera);
 }
 
-
+window.addEventListener('mousemove', (event) => {
+	// Calculate the normalized mouse position between -1 and 1
+	const xNormalized = (event.clientX / window.innerWidth) * 2 - 1;
+	const yNormalized = -(event.clientY / window.innerHeight) * 2 + 1;
+  
+	// Store the normalized mouse position in an object
+	mousePos = { x: xNormalized, y: yNormalized };
+  });

@@ -1,5 +1,18 @@
+html,
 body {
-  margin: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+h1 {
+  position: fixed;
+  background-color: unset;
+  color: wheat;
+}
+.canvas0cc {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
 }
 canvas {
   width: 100%;

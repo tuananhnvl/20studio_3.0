@@ -98,7 +98,7 @@ class OrbitControls extends EventDispatcher {
 		this.target0 = this.target.clone();
 		this.position0 = this.object.position.clone();
 		this.zoom0 = this.object.zoom;
-
+		console.log('from OrbitConrols')
 		// the target DOM element for key events
 		this._domElementKeyEvents = null;
 

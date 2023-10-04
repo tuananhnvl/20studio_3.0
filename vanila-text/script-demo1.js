@@ -177,7 +177,7 @@ function onAnimLoop() {
   postFXMesh.material.uniforms.sampler.value = renderBufferA.texture
 
   // Render the postFX mesh to the default framebuffer
-  renderer.render(postFXScene, orthoCamera)
+  //renderer.render(postFXScene, orthoCamera)
 
   // Ping-pong our framebuffers by swapping them
   // at the end of each frame render

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>CodePen - ThreeJS</title>
+  <title>Demo - ThreeJS</title>
   <link rel="stylesheet" href="./style.css">
 
   <link href='//fonts.googleapis.com/css?family=Signika+Negative:300,400,600' rel='stylesheet' type='text/css'>
@@ -22,6 +22,8 @@
       <a href="http://127.0.0.1:5500/static/index.html">Page 1</a>
       <a href="http://127.0.0.1:5500/static/demo1.html">Page 2</a>
       <a href="http://127.0.0.1:5500/static/demo2.html">Page 3</a>
+      <a href="http://127.0.0.1:5500/static/demo3.html">Page 4</a>
+      <a href="http://127.0.0.1:5500/static/demo4.html">Page 5</a>
     </div>
     <div class="description panel blue">
       <div>
@@ -60,7 +62,7 @@
     attribute vec3 dog_pos;
     attribute vec3 brain_pos;
     attribute vec3 bud_pos;
-    uniform float u_time;
+    uniform float time;
     uniform vec3 uMouse;
     uniform float uScroll;  // Scroll value from 0 to 1
     varying vec3 v_pos;
@@ -74,11 +76,26 @@
       float randomValue = fract(sin(seed) * 43758.5453);
       return randomValue * delayAmount ;
     }
-    
+    mat4 rotationMatrix(vec3 axis, float angle) {
+      axis = normalize(axis);
+      float s = sin(angle);
+      float c = cos(angle);
+      float oc = 1.0 - c;
+      
+      return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                  oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                  oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                  0.0,                                0.0,                                0.0,                                1.0);
+  }
+  
+  vec3 rotate(vec3 v, vec3 axis, float angle) {
+    mat4 m = rotationMatrix(axis, angle);
+    return (m * vec4(v, 1.0)).xyz;
+  }
     void main() {
-      float scaleObjDog = 7.2;
+      float scaleObjDog = 3.;
       float scaleObjBrain = 0.22;
-      float scaleObjBud = 0.52;
+      float scaleObjBud = 0.22;
       float index = float(gl_InstanceID);  // Convert gl_InstanceID to float
       float delay = getRandomDelay(index);
       float normalizedScroll = smoothstep(delay, 1.0, uScroll); // Apply delay to scroll value
@@ -96,13 +113,16 @@
       vec3 interpolatedPos;
       interpolatedPos = mix(dog_posNew, bud_posNew, normalizedScroll );
     
-      interpolatedPos.x += spiralOffset * cos(angle );
+      <!-- interpolatedPos.x += spiralOffset * cos(angle );
       interpolatedPos.y += spiralOffset * sin(angle) ;
-      interpolatedPos.z += spiralOffset / float(5.0);
-    
-      vec3 position = position + interpolatedPos;
-    
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      interpolatedPos.z += spiralOffset / float(5.0); -->
+  
+     
+      vec3 rote = rotate(interpolatedPos,vec3(1.,0.,0.),time);
+      vec3 positionFinal = position + interpolatedPos;
+ 
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(positionFinal, 1.0);
+      v_pos = positionFinal;
     }</div>
     <div id="fragmentShader">
       uniform vec3 u_light;
@@ -123,7 +143,7 @@
             final = texture2D(uTexture, vec2(v_pos.x,v_pos.y));
           }
     
-          gl_FragColor = vec4(1.0,0.3,0.5,1.0);
+          gl_FragColor = vec4(1.0,0.3,v_pos.z,v_pos.z);
       }
     </div>
 
