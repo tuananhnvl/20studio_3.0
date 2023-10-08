@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<style>
+    body {
+        overflow: hidden;
+        margin: 0;
+    }
+</style>
+
+<body>
+
+</body>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "http://127.0.0.1:5501/vanila-text/core-three/threev132.module.js"
+        }
+    }
+</script>
+
+
+<script type="module">
+    import * as THREE from 'three'
+    import { OrbitControls } from "./core-three/OrbitControlsv132.js";
+    import { STLLoader } from "./core-three/STLLoaderv132.js";
+    import { GLTFLoader } from "./core-three/GLTFLoaderv132.js";
+ 
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(0, 0,3);
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setClearColor(0x181005);
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.maxDistance = 150;
+    controls.enableDamping = true;
+
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(.7, .7, .7), new THREE.MeshBasicMaterial({ color: 'blue' }))
+    mesh.position.set(-1.5, 0, 0)
+    scene.add(mesh)
+    
+    var time = 0.
+    const axesHelper = new THREE.AxesHelper(1,1); 
+    scene.add(axesHelper);
+
+    const vert = `
+    uniform float time;
+
+    void main() {
+        vec3 newPos = position;
+       
+    
+        //newPos.y +=   cos(newPos.x + time/100.);
+        //newPos.y += sin( newPos.x + time/30.) * newPos.x + newPos.x;
+        newPos.z -= sin(1.-newPos.x + time/30.);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.);
+    }
+    `
+    const frag = `
+    void main() {
+        gl_FragColor = vec4(1.,1.,.5,1.);
+    }
+    `
+  
+
+    let geoPlane = new THREE.PlaneGeometry(1,1,5,5)
+    console.log(geoPlane)
+    let matModel = new THREE.MeshBasicMaterial({color:'gray',side : 2,wireframe:true})
+        let matModelShader = new THREE.ShaderMaterial( {
+            uniforms: {
+                time: { value: 0. },
+                resolution: { value: new THREE.Vector2() }
+            },
+            vertexShader: vert,
+            fragmentShader: frag,
+            wireframe:true,
+            side:1
+        });
+
+        let meshModel = new THREE.Mesh(geoPlane,matModelShader)
+        let groupModel = new THREE.Group()
+        groupModel.add(meshModel)
+        
+        scene.add(groupModel)
+
+
+    renderer.setAnimationLoop(() => {
+        controls.update();
+        time++
+       if(matModelShader){
+        matModelShader.uniforms.time.value = time
+       }
+        renderer.render(scene, camera);
+    });
+
+
+</script>
+
+</html>
+
+<!-- https://codepen.io/prisoner849/pen/WNQNdpv?editors=0011 -->
