@@ -7618,7 +7618,9 @@
     let increasing = true;
     const loaderModel = new GLTFLoader();
     loaderModel.load('./asset/mesh.glb', function (model) {
-        console.log(model.scene.children[0].geometry, newPosOfVert[1])
+        let mhh = model.scene.children[0].geometry
+        let re = mhh.setSubdivisionLevel(2);
+        console.log(re, newPosOfVert[1])
         console.log('model',model.scene.children[0].geometry)
         //let geoModel = model.scene.children[0].geometry
         let geoModel = new THREE.PlaneGeometry(1,1,32,23)
